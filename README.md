@@ -14,11 +14,11 @@ Ce projet vise à assister les professionnels de la grande distribution dans l�
 
 ### 🧩 Workflow automatisé avec n8n
 
-![Workflow n8n](./images/35cdbb84-e252-4b90-be13-0eedfb22bda0.png)
+![Workflow n8n](./35cdbb84-e252-4b90-be13-0eedfb22bda0.png)
 
 ### 🧾 Formulaire de saisie HD Automatisation
 
-![Formulaire](./images/29c3495d-7ddb-47b8-a324-84367c44a4e0.png)
+![Formulaire](./29c3495d-7ddb-47b8-a324-84367c44a4e0.png)
 
 ---
 
