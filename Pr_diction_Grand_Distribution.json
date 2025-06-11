@@ -1,0 +1,479 @@
+{
+  "name": "Prédiction Grand Distribution",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Prévision des ventes",
+        "formDescription": "Optimiser les commandes de produits frais en prévoyant la demande grâce à l'IA, à partir des données de consommation hebdomadaires.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": " Nom de l'entité ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Nom_produit",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Domaine d'activités ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Pays",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Ville",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email ",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Quantité commandée",
+              "fieldType": "number",
+              "placeholder": "en Kg",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1060,
+        -440
+      ],
+      "id": "ddce9868-f4a0-4fbe-9462-969e962e0ad6",
+      "name": "On form submission",
+      "webhookId": "48442976-5bd4-47c9-83b7-40e50c0b9233"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-4-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a proffesional web scrapper , you role is to find 3 concurence for this entity\n{{ $json.body.submission.questions[0].value }} based on this domain of activity {{ $json.body.submission.questions[2].value }}\nin this country {{ $json.body.submission.questions[3].value }} in this city {{ $json.body.submission.questions[4].value }} look for the price of sell for this product {{ $json.body.submission.questions[1].value }}for each concurent , reponse should be in json format , it should have the name and selling price of the product for each concurence entity.the response should be in this format :\ncompetitors:\n{\n    \"name\": \"Aswak Assalam\",\n    \"price\": \"10 MAD/kg\"\n  },",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1220,
+        -880
+      ],
+      "id": "69b84ee7-5bf8-46de-9ae4-0d3ca88690f3",
+      "name": "concurence",
+      "credentials": {
+        "openAiApi": {
+          "id": "4ZkkHbT2IbTgorzI",
+          "name": "OpenAi account AK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a8b0746-6ad8-489e-9b97-f33609823f27",
+              "name": "comp1",
+              "value": "={{ $json.message.content.competitors[0].price }}",
+              "type": "string"
+            },
+            {
+              "id": "063aaac9-2668-4fb0-9030-42b7ef3a6143",
+              "name": "comp2",
+              "value": "={{ $json.message.content.competitors[1].price }}",
+              "type": "string"
+            },
+            {
+              "id": "083c3fbf-5e50-4001-a24a-5214f77f69e2",
+              "name": "comp3",
+              "value": "={{ $json.message.content.competitors[2].price }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -844,
+        -880
+      ],
+      "id": "13748902-dad6-4d73-a266-d5f81f8054f6",
+      "name": "comp_prix"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-4-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=you are a professional product manager for a big distribution center , your role is to identify the current agricultor season , to identify if this is the best time to get fresh products , i will give you the name of the product , and i need you to answer with it's best season and what season are we in {{ $now }} , the response should be in json format exactly like this example :\nproduit\n{\n    \"name\": \"{{ $('Webhook').item.json.body.submission.questions[1].value }}\",\n    \"saison_actuel\": \"été\",\n    \"saison_production\": \"hiver\"\n  }",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -620,
+        -880
+      ],
+      "id": "64965fc9-e3ff-46fa-b006-f03b5f1ca260",
+      "name": "saison",
+      "credentials": {
+        "openAiApi": {
+          "id": "4ZkkHbT2IbTgorzI",
+          "name": "OpenAi account AK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a8b0746-6ad8-489e-9b97-f33609823f27",
+              "name": "saison",
+              "value": "={{ $json.message.content.saison_production }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -248,
+        -880
+      ],
+      "id": "7e79789e-fc5e-48f7-9d30-e0b44dd64535",
+      "name": "meilleur_saison"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a professional procurement manager for a big distribution center. Based on the following data, provide a detailed analysis for the requested quantity. \n\nCompetitor price 1: {{ $('concurence').item.json.message.content.competitors[0].price }}\nCompetitor price 2: {{ $('concurence').item.json.message.content.competitors[1].price }}\nCompetitor price 3: {{ $('concurence').item.json.message.content.competitors[2].price }}\nProduction season: {{ $('saison').item.json.message.content.saison_production }}\nCurrent weather conditions: {{ $('meteo_prediction').item.json.message.content.temperature.temperature_moyenne }}.{{ $('meteo_prediction').item.json.message.content.temperature.conditions_favorables }}\nRequested quantity: {{ $('Webhook').item.json.body.submission.questions[6].value }}\n\nAnalyze the market conditions, seasonal availability, weather impact on transportation/storage, and suggest quantity adjustments. The response should be in json format exactly like this example:\n\n{\n    \"quantite_demandee\": \"500 kg\",\n    \"quantite_suggeree\": \"200 kg\",\n    \"ajustement\": \"diminuer\",\n    \"prix_concurrent_1\": \"10 MAD/kg\",\n    \"prix_concurrent_2\": \"9 MAD/kg\",\n    \"prix_concurrent_3\": \"11 MAD/kg\",\n    \"prix_concurrent_moyen\": \"10 MAD/kg\",\n    \"prix_propose\": \"9.5 MAD/kg\",\n    \"saison_production\": \"automne\",\n    \"conditions_meteo\": \"défavorables\",\n    \"analyse_meteorologique\": \"Les températures actuelles présentent des risques pour le transport et stockage des produits frais\",\n    \"analyse_saisonniere\": \"Le produit est actuellement dans/hors de sa saison de production, ce qui impacte la disponibilité, la qualité et les prix sur le marché\",\n    \"analyse_tarifaire\": \"Les prix concurrents observés sont de 10, 9 et 11 MAD/kg, avec une moyenne de 10 MAD/kg. Notre proposition de 9.5 MAD/kg nous positionne favorablement\",\n    \"ajustement_quantite\": \"Suggestion d'ajuster la quantité commandée en fonction des conditions actuelles\"\n}",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        620,
+        -880
+      ],
+      "id": "f75b495f-a7eb-4e43-b792-aca876dcd3cb",
+      "name": "recommendation email",
+      "credentials": {
+        "openAiApi": {
+          "id": "4ZkkHbT2IbTgorzI",
+          "name": "OpenAi account AK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a8b0746-6ad8-489e-9b97-f33609823f27",
+              "name": "temperature moyenne",
+              "value": "={{ $json.message.content.temperature.temperature_moyenne }}",
+              "type": "string"
+            },
+            {
+              "id": "c0499229-c2eb-4923-a477-68d805459fdc",
+              "name": "conditions favorables",
+              "value": "={{ $json.message.content.temperature.conditions_favorables }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        348,
+        -880
+      ],
+      "id": "eaef008f-5407-4a28-b2e1-186fa4eb4d38",
+      "name": "meteo"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-4-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a professional logistics coordinator for a big distribution center, your role is to check the 3-day weather forecast for {{ $('Webhook').item.json.body.submission.questions[4].value }} starting from {{ $now }}, to determine if temperatures are suitable for fresh product transportation, the response should be in json format exactly like this example:\ntemperature:\n{\n    \"location\": \"{{ $('Webhook').item.json.body.submission.questions[4].value }}\",\n    \"temperature_moyenne\": \"36\",\n    \"conditions_favorables\": \"non\"\n}",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -28,
+        -880
+      ],
+      "id": "4c945f47-6508-49e1-bfe9-9d3449529f46",
+      "name": "meteo_prediction",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVABOeuZf789uxoF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=yassineelabdaoui4@gmail.com",
+        "subject": " analyse de commande ",
+        "message": "=<!DOCTYPE html> <html lang=\"fr\"> <head>     <meta charset=\"UTF-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">     <title>Analyse de votre commande</title>     <style>         body {             font-family: Arial, sans-serif;             line-height: 1.6;             margin: 0;             padding: 20px;             background-color: #f4f4f4;         }         .container {             max-width: 600px;             margin: 0 auto;             background: white;             padding: 20px;             border-radius: 8px;             box-shadow: 0 2px 10px rgba(0,0,0,0.1);         }         .header {             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);             color: white;             padding: 20px;             border-radius: 8px 8px 0 0;             margin: -20px -20px 20px -20px;             text-align: center;         }         .section {             margin-bottom: 20px;             padding: 15px;             border-left: 4px solid #667eea;             background-color: #f8f9fa;         }         .section h3 {             margin-top: 0;             color: #333;         }         .price-table {             width: 100%;             border-collapse: collapse;             margin: 10px 0;         }         .price-table th, .price-table td {             border: 1px solid #ddd;             padding: 8px;             text-align: left;         }         .price-table th {             background-color: #667eea;             color: white;         }         .highlight {             background-color: #e7f3ff;             padding: 10px;             border-radius: 5px;             margin: 10px 0;         }         .warning {             background-color: #fff3cd;             color: #856404;             padding: 10px;             border-radius: 5px;             border-left: 4px solid #ffc107;         }         .footer {             text-align: center;             margin-top: 30px;             padding-top: 20px;             border-top: 1px solid #ddd;             color: #666;         }     </style> </head> <body>     <div class=\"container\">         <div class=\"header\">             <h1>📊 Analyse de votre commande</h1>             <p>Évaluation des conditions de marché et recommandations</p>         </div>          <div class=\"highlight\">             <h2>📦 Résumé de la commande</h2>             <p><strong>Quantité demandée:</strong>{{ $('recommendation email').item.json.message.content.quantite_demandee }}</p>             <p><strong>Quantité suggérée:</strong> {{ $('recommendation email').item.json.message.content.quantite_suggeree }}</p>             <p><strong>Ajustement:</strong> <span style=\"color: #d73527; font-weight: bold;\"></span></p>         </div>          <div class=\"section\">             <h3>💰 Analyse Tarifaire</h3>             <table class=\"price-table\">                 <tr>                     <th>Concurrent</th>                     <th>Prix</th>                 </tr>                 <tr>                     <td>{{ $('concurence').item.json.message.content.competitors[0].name }} </td>                     <td> {{ $('recommendation email').item.json.message.content.prix_concurrent_1 }}</td>                 </tr>                 <tr>                     <td>{{ $('concurence').item.json.message.content.competitors[1].name }}</td>                     <td>{{ $('recommendation email').item.json.message.content.prix_concurrent_2 }} </td>                 </tr>                 <tr>                     <td>{{ $('concurence').item.json.message.content.competitors[2].name }}</td>                     <td> {{ $('recommendation email').item.json.message.content.prix_concurrent_moyen }}</td>                 </tr>                 <tr style=\"background-color: #f8f9fa;\">                     <td><strong>Prix moyen concurrent</strong></td>                     <td><strong> {{ $('recommendation email').item.json.message.content.prix_concurrent_moyen }}</strong></td>                 </tr>                 <tr style=\"background-color: #e7f3ff;\">                     <td><strong>Notre prix proposé</strong></td>                     <td><strong> {{ $('recommendation email').item.json.message.content.prix_propose }}</strong></td>                 </tr>             </table>         </div>          <div class=\"section\">             <h3>🌱 Conditions Saisonnières</h3>             <p><strong>Saison de production:</strong> {{ $('recommendation email').item.json.message.content.saison_production }}</p>         </div>          <div class=\"section\">             <h3>🌤️ Conditions Météorologiques</h3>             <div class=\"warning\">                 <strong>Statut:</strong> {{ $('recommendation email').item.json.message.content.conditions_meteo }}           </div>         </div>           <div class=\"section\">\n            <h3>📋 Analyse Détaillée</h3>\n            \n            <div style=\"margin-bottom: 15px; padding: 12px; background-color: #fff8dc; border-left: 4px solid #ffa500; border-radius: 4px;\">\n                <h4 style=\"margin: 0 0 8px 0; color: #ff6b35;\">🌤️ Analyse Météorologique</h4>\n                <p style=\"margin: 0;\"> {{ $json.meteo }}</p>\n            </div>\n\n            <div style=\"margin-bottom: 15px; padding: 12px; background-color: #f0fff0; border-left: 4px solid #32cd32; border-radius: 4px;\">\n                <h4 style=\"margin: 0 0 8px 0; color: #228b22;\">🌱 Analyse Saisonnière</h4>\n                <p style=\"margin: 0;\">{{ $json.saison }}</p>\n            </div>\n\n            <div style=\"margin-bottom: 15px; padding: 12px; background-color: #f0f8ff; border-left: 4px solid #4169e1; border-radius: 4px;\">\n                <h4 style=\"margin: 0 0 8px 0; color: #1e90ff;\">💰 Analyse Tarifaire</h4>\n                <p style=\"margin: 0;\">{{ $json.tarif }}</p>\n            </div>\n\n            <div style=\"margin-bottom: 15px; padding: 12px; background-color: #fdf5e6; border-left: 4px solid #daa520; border-radius: 4px;\">\n                <h4 style=\"margin: 0 0 8px 0; color: #b8860b;\">📦 Ajustement Quantité</h4>\n                <p style=\"margin: 0;\">{{ $json.proposition }}</p>\n            </div>\n        </div>\n\n        <div class=\"footer\">\n            <p>Cette analyse a été générée automatiquement par notre système de gestion des commandes .</p>\n            <p>Pour toute question, n'hésitez pas à nous contacter contact@hdautomatisation.fr .</p>\n            <p><strong>Équipe HdAutomatisation</strong></p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1260,
+        -880
+      ],
+      "id": "309c6278-495d-416a-a545-0146538fb69f",
+      "name": "Gmail",
+      "webhookId": "21794dd0-ad37-4d61-89d1-b9fcd053ea0f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4MS0hyosjPHhFw8V",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55f94d6a-94e0-4870-b50d-d6d6246d6526",
+              "name": "meteo",
+              "value": "={{ $json.message.content.analyse_meteorologique }}",
+              "type": "string"
+            },
+            {
+              "id": "73883187-a66f-492f-88b6-e53dc7b45451",
+              "name": "saison",
+              "value": "={{ $json.message.content.analyse_saisonniere }}",
+              "type": "string"
+            },
+            {
+              "id": "eba34668-6b2e-4a74-ad36-1cbeab4d6185",
+              "name": "tarif",
+              "value": "={{ $json.message.content.analyse_tarifaire }}",
+              "type": "string"
+            },
+            {
+              "id": "3f6bca15-ab84-4128-8e0b-0bbdfdaa804a",
+              "name": "proposition",
+              "value": "={{ $json.message.content.ajustement_quantite }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        980,
+        -880
+      ],
+      "id": "ddd1bff1-26e1-4e08-bd09-7e66f7288799",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "db73bb99-5b3b-417b-9658-f546e848c806",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1560,
+        -880
+      ],
+      "id": "e2499e69-74f0-4dc6-89f8-0ec62943aa66",
+      "name": "Webhook",
+      "webhookId": "db73bb99-5b3b-417b-9658-f546e848c806"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        []
+      ]
+    },
+    "concurence": {
+      "main": [
+        [
+          {
+            "node": "comp_prix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "comp_prix": {
+      "main": [
+        [
+          {
+            "node": "saison",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "saison": {
+      "main": [
+        [
+          {
+            "node": "meilleur_saison",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "meilleur_saison": {
+      "main": [
+        [
+          {
+            "node": "meteo_prediction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "meteo": {
+      "main": [
+        [
+          {
+            "node": "recommendation email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "meteo_prediction": {
+      "main": [
+        [
+          {
+            "node": "meteo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recommendation email": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "concurence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f6407313-5bd1-4221-8e7e-979af864e31a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5eadc60aa2160b2d4f6fd4e1236df5f22cad2d61ce7970f5addab93a65af9e8"
+  },
+  "id": "56ziClcR8EdatchQ",
+  "tags": []
+}
